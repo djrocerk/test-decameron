@@ -16,9 +16,17 @@ import {
   Button,
   TableContainer,
   TextField,
+  Grid,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import HotelIcon from "@mui/icons-material/Hotel";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import LocationCityIcon from "@mui/icons-material/LocationCity";
+import BedIcon from "@mui/icons-material/Bed";
+import AddIcon from "@mui/icons-material/Add";
+import CloseIcon from "@mui/icons-material/Close";
+import SaveIcon from "@mui/icons-material/Save";
 import axios from "axios";
 import toast from "react-hot-toast";
 import AccommodationForm from "./AccommodationForm";
@@ -34,6 +42,7 @@ const HotelList = ({ hotels, refreshHotels }) => {
     tipo: "",
     acomodacion: "",
   });
+  const [addedRooms, setAddedRooms] = useState([]);
 
   const handleEdit = (hotelId) => {
     console.log("Editar hotel con id: ", hotelId);
@@ -75,9 +84,50 @@ const HotelList = ({ hotels, refreshHotels }) => {
     });
   };
 
+  const handleSaveAllRooms = async () => {
+    try {
+      for (const room of addedRooms) {
+        const tipoResponse = await axios.post(
+          `http://localhost:8000/api/hoteles/${hotelDetails.id}/tipos-habitacion`,
+          { tipo: room.tipo }
+        );
+
+        const roomTypeId = tipoResponse.data.id;
+
+        await axios.post(
+          `http://localhost:8000/api/hoteles/${roomTypeId}/tipos-habitacion/${hotelDetails.id}/acomodaciones`,
+          {
+            cantidad: room.cantidad,
+            acomodacion: room.acomodacion,
+          }
+        );
+      }
+
+      toast.success("Cambios guardados exitosamente!");
+      refreshHotels();
+      setAddedRooms([]);
+    } catch (error) {
+      console.error("Error al guardar habitaciones:", error);
+      toast.error("Error al guardar habitaciones");
+    }
+  };
+
   const handleAddRoom = () => {
     if (!newRoom.cantidad || !newRoom.tipo || !newRoom.acomodacion) {
       toast.error("Por favor, complete todos los campos.");
+      return;
+    }
+
+    const validTypes = {
+      Estándar: ["Sencilla", "Doble"],
+      Junior: ["Triple", "Cuádruple"],
+      Suite: ["Sencilla", "Doble", "Triple"],
+    };
+
+    if (!validTypes[newRoom.tipo]?.includes(newRoom.acomodacion)) {
+      toast.error(
+        `Acomodación no válida para el tipo de habitación ${newRoom.tipo}.`
+      );
       return;
     }
 
@@ -99,11 +149,9 @@ const HotelList = ({ hotels, refreshHotels }) => {
         },
       ],
     }));
-    setNewRoom({
-      cantidad: "",
-      tipo: "",
-      acomodacion: "",
-    });
+
+    setAddedRooms([...addedRooms, newRoom]);
+    setNewRoom({ cantidad: "", tipo: "", acomodacion: "" });
     setError(null);
   };
 
@@ -207,34 +255,68 @@ const HotelList = ({ hotels, refreshHotels }) => {
       </Dialog>
 
       {/* Modal de detalles */}
-      <Dialog open={!!hotelDetails} onClose={() => setHotelDetails(null)}>
-        <DialogTitle>Detalles del Hotel</DialogTitle>
-        <DialogContent>
+      <Dialog
+        open={!!hotelDetails}
+        onClose={() => setHotelDetails(null)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle
+          sx={{
+            fontWeight: "bold",
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+          }}
+        >
+          <HotelIcon color="primary" />
+          Detalles del Hotel
+        </DialogTitle>
+
+        <DialogContent dividers>
           {hotelDetails && (
             <>
-              <Typography variant="h6">
-                Nombre: {hotelDetails.nombre}
+              <Typography
+                variant="body1"
+                sx={{ display: "flex", alignItems: "center", gap: 1 }}
+              >
+                <HotelIcon fontSize="small" /> <strong>Nombre:</strong>{" "}
+                {hotelDetails.nombre}
               </Typography>
-              <Typography variant="body1">
-                Dirección: {hotelDetails.direccion}
+              <Typography
+                variant="body1"
+                sx={{ display: "flex", alignItems: "center", gap: 1 }}
+              >
+                <LocationOnIcon fontSize="small" /> <strong>Dirección:</strong>{" "}
+                {hotelDetails.direccion}
               </Typography>
-              <Typography variant="body1">
-                Ciudad: {hotelDetails.ciudad}
+              <Typography
+                variant="body1"
+                sx={{ display: "flex", alignItems: "center", gap: 1 }}
+              >
+                <LocationCityIcon fontSize="small" /> <strong>Ciudad:</strong>{" "}
+                {hotelDetails.ciudad}
               </Typography>
-              <Typography variant="body1">
-                Número de Habitaciones: {hotelDetails.numero_de_habitaciones}
+              <Typography
+                variant="body1"
+                sx={{ display: "flex", alignItems: "center", gap: 1 }}
+              >
+                <BedIcon fontSize="small" /> <strong>Habitaciones:</strong>{" "}
+                {hotelDetails.numero_de_habitaciones}
               </Typography>
 
-              {/* Tabla de habitacionss */}
-              <TableContainer sx={{ mt: 2 }}>
-                <Table>
+              <Typography variant="h6" sx={{ mt: 3, mb: 1 }}>
+                Tipos de Habitaciones
+              </Typography>
+              <TableContainer>
+                <Table size="small">
                   <TableHead>
                     <TableRow>
                       <TableCell>
                         <strong>Cantidad</strong>
                       </TableCell>
                       <TableCell>
-                        <strong>Tipo de Habitación</strong>
+                        <strong>Tipo</strong>
                       </TableCell>
                       <TableCell>
                         <strong>Acomodación</strong>
@@ -242,49 +324,81 @@ const HotelList = ({ hotels, refreshHotels }) => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {hotelDetails.tipo_habitacions &&
-                      hotelDetails.tipo_habitacions.map((room, index) => (
-                        <TableRow key={index}>
-                          <TableCell>{room.cantidad}</TableCell>
-                          <TableCell>{room.tipo}</TableCell>
-                          <TableCell>{room.acomodacion}</TableCell>
-                        </TableRow>
-                      ))}
+                    {hotelDetails.tipo_habitacions?.map((room, index) => (
+                      <TableRow key={index}>
+                        <TableCell>{room.cantidad}</TableCell>
+                        <TableCell>{room.tipo}</TableCell>
+                        <TableCell>{room.acomodacion}</TableCell>
+                      </TableRow>
+                    ))}
                   </TableBody>
                 </Table>
               </TableContainer>
 
-              <Typography variant="h6" sx={{ mt: 2 }}>
+              <Typography variant="h6" sx={{ mt: 3 }}>
                 Agregar nueva habitación
               </Typography>
-              <TextField
-                label="Cantidad"
-                name="cantidad"
-                type="number"
-                value={newRoom.cantidad}
-                onChange={handleChange}
-                fullWidth
-                margin="normal"
-              />
-              <RoomTypeForm value={newRoom.tipo} onChange={handleChange} />
-              <AccommodationForm
-                value={newRoom.acomodacion}
-                onChange={handleChange}
-              />
+              <Grid container spacing={2} sx={{ mt: 1 }}>
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    label="Cantidad"
+                    name="cantidad"
+                    type="number"
+                    value={newRoom.cantidad}
+                    onChange={handleChange}
+                    fullWidth
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <RoomTypeForm
+                    value={newRoom.tipo}
+                    onChange={handleChange}
+                    fullWidth
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <AccommodationForm
+                    value={newRoom.acomodacion}
+                    onChange={handleChange}
+                    fullWidth
+                  />
+                </Grid>
+              </Grid>
+
               {error && (
-                <Typography color="error" sx={{ mt: 2 }}>
+                <Typography color="error" sx={{ mt: 1 }}>
                   {error}
                 </Typography>
               )}
             </>
           )}
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setHotelDetails(null)} color="primary">
+
+        <DialogActions sx={{ px: 3, py: 2 }}>
+          <Button
+            variant="outlined"
+            color="secondary"
+            startIcon={<CloseIcon />}
+            onClick={() => setHotelDetails(null)}
+          >
             Cerrar
           </Button>
-          <Button onClick={handleAddRoom} color="primary">
-            Agregar Habitación
+          <Button
+            variant="contained"
+            color="secondary"
+            startIcon={<AddIcon />}
+            onClick={handleAddRoom}
+          >
+            Agregar
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<SaveIcon />}
+            onClick={handleSaveAllRooms}
+            disabled={addedRooms.length === 0}
+          >
+            Guardar
           </Button>
         </DialogActions>
       </Dialog>
