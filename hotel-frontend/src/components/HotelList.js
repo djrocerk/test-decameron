@@ -26,6 +26,7 @@ import LocationCityIcon from "@mui/icons-material/LocationCity";
 import BedIcon from "@mui/icons-material/Bed";
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import SaveIcon from "@mui/icons-material/Save";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -157,7 +158,9 @@ const HotelList = ({ hotels, refreshHotels }) => {
 
   return (
     <Container sx={{ mt: 4 }}>
-      <h3>Listado de Hoteles</h3>
+      <Typography variant="h6" gutterBottom>
+        Listado de Hoteles
+      </Typography>
 
       <Paper elevation={3} sx={{ p: 2, borderRadius: 2 }}>
         <Table>
@@ -230,7 +233,7 @@ const HotelList = ({ hotels, refreshHotels }) => {
                       onClick={() => handleViewDetails(hotel)}
                       size="small"
                     >
-                      <DeleteIcon fontSize="small" />
+                      <VisibilityIcon fontSize="small" />
                     </IconButton>
                   </TableCell>
                 </TableRow>
