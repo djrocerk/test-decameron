@@ -142,3 +142,8 @@ test-decameron/
 
 Desarrollado por **Roberto Cerquera Guerrero** como parte de un ejercicio técnico para Decameron.  
 
+## 🛠️ App desplegada
+
+https://test-hotel-front.vercel.app/
+ 
+
