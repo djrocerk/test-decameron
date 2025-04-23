@@ -26,7 +26,7 @@ import LocationCityIcon from "@mui/icons-material/LocationCity";
 import BedIcon from "@mui/icons-material/Bed";
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
-import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityIcon from "@mui/icons-material/Visibility";
 import SaveIcon from "@mui/icons-material/Save";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -71,9 +71,17 @@ const HotelList = ({ hotels, refreshHotels }) => {
     setHotelToDelete(null);
   };
 
-  const handleViewDetails = (hotel) => {
-    setHotelDetails(hotel);
-    setError(null);
+  const handleViewDetails = async (hotel) => {
+    try {
+      const response = await axios.get(
+        `http://localhost:8000/api/hoteles/${hotel.id}`
+      );
+      setHotelDetails(response.data);
+      setError(null);
+    } catch (error) {
+      console.error("Error al obtener los detalles del hotel:", error);
+      toast.error("No se pudieron cargar los detalles del hotel.");
+    }
   };
 
   const handleChange = (e) => {
@@ -104,6 +112,11 @@ const HotelList = ({ hotels, refreshHotels }) => {
         );
       }
 
+      const updatedHotel = await axios.get(
+        `http://localhost:8000/api/hoteles/${hotelDetails.id}`
+      );
+
+      setHotelDetails(updatedHotel.data);
       toast.success("Cambios guardados exitosamente!");
       refreshHotels();
       setAddedRooms([]);
@@ -327,13 +340,28 @@ const HotelList = ({ hotels, refreshHotels }) => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {hotelDetails.tipo_habitacions?.map((room, index) => (
-                      <TableRow key={index}>
-                        <TableCell>{room.cantidad}</TableCell>
-                        <TableCell>{room.tipo}</TableCell>
-                        <TableCell>{room.acomodacion}</TableCell>
+                    {hotelDetails?.tipo_habitacions &&
+                    hotelDetails.tipo_habitacions.length > 0 ? (
+                      hotelDetails.tipo_habitacions.map((tipoHabitacion) =>
+                        tipoHabitacion.acomodacions.map(
+                          (acomodacion, index) => (
+                            <TableRow key={index}>
+                              <TableCell>{acomodacion.cantidad}</TableCell>
+                              <TableCell>{tipoHabitacion.tipo}</TableCell>
+                              <TableCell>{acomodacion.acomodacion}</TableCell>
+                            </TableRow>
+                          )
+                        )
+                      )
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={3} align="center">
+                          <Typography variant="body2" color="textSecondary">
+                            No hay datos disponibles
+                          </Typography>
+                        </TableCell>
                       </TableRow>
-                    ))}
+                    )}
                   </TableBody>
                 </Table>
               </TableContainer>
