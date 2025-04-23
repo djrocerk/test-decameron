@@ -18,7 +18,6 @@ import {
   TextField,
   Grid,
 } from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import HotelIcon from "@mui/icons-material/Hotel";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
@@ -44,10 +43,6 @@ const HotelList = ({ hotels, refreshHotels }) => {
     acomodacion: "",
   });
   const [addedRooms, setAddedRooms] = useState([]);
-
-  const handleEdit = (hotelId) => {
-    console.log("Editar hotel con id: ", hotelId);
-  };
 
   const handleDelete = async () => {
     try {
@@ -227,13 +222,6 @@ const HotelList = ({ hotels, refreshHotels }) => {
                     </Typography>
                   </TableCell>
                   <TableCell align="center">
-                    <IconButton
-                      color="primary"
-                      onClick={() => handleEdit(hotel.id)}
-                      size="small"
-                    >
-                      <EditIcon fontSize="small" />
-                    </IconButton>
                     <IconButton
                       color="error"
                       onClick={() => handleOpenDialog(hotel.id)}
