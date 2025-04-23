@@ -369,8 +369,8 @@ const HotelList = ({ hotels, refreshHotels }) => {
               <Typography variant="h6" sx={{ mt: 3 }}>
                 Agregar nueva habitación
               </Typography>
-              <Grid container spacing={2} sx={{ mt: 1 }}>
-                <Grid item xs={12} sm={4}>
+              <Grid container spacing={2} direction="column" sx={{ mt: 1 }}>
+                <Grid item xs={12}>
                   <TextField
                     label="Cantidad"
                     name="cantidad"
@@ -380,14 +380,14 @@ const HotelList = ({ hotels, refreshHotels }) => {
                     fullWidth
                   />
                 </Grid>
-                <Grid item xs={12} sm={4}>
+                <Grid item xs={12}>
                   <RoomTypeForm
                     value={newRoom.tipo}
                     onChange={handleChange}
                     fullWidth
                   />
                 </Grid>
-                <Grid item xs={12} sm={4}>
+                <Grid item xs={12}>
                   <AccommodationForm
                     value={newRoom.acomodacion}
                     onChange={handleChange}
